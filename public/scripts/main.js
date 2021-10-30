@@ -165,7 +165,7 @@ rhit.FbProjectManager = class {
 	  }
 	getProjectAtIndex(index) {  
 		const docSnapshot = this._documentSnapshots[index];
-		console.log(this._documentSnapshots[index]);
+		
 		const proj = new rhit.Project(
 			docSnapshot.id, 
 			docSnapshot.get(rhit.FB_KEY_NAME),
@@ -186,6 +186,32 @@ constructor() {
 	// });
 	document.querySelector('#signOutButton').addEventListener("click", (event) => {
 		rhit.fbAuthManager.signOut();
+	});
+	document.querySelector('#submitAddProject').addEventListener("click", (event) => {
+		const name = document.querySelector("#inputName").value;
+		rhit.fbProjectManager.addProject(name);
+		const ref = firebase.storage().ref();
+		const file = document.querySelector("#selectPhoto").files[0];
+		const filename = fbAuthManager.uid + name + file.name;
+		const metadata = {contentType: file.type};
+		ref.child(filename).put(file,metadata);
+		// upload.then(snapshot=>snapshot.ref.getDownloadURL());
+		$("#addProjectModal").modal("hide");
+		
+		
+		// const photo = document.querySelector("#selectPhoto").files;
+		// if(photo.length === 0){
+		// 	console.error("No file selected.");
+		// 	return
+		// }else{
+		// 	for(const file of photo){
+		// 		const image = document.createElement("img");
+		// 		image.src = URL.createObjectURL(file);
+		// 		console.log("Image source:");
+		// 		console.log(image.src);
+
+		// 	}
+		// }
 	});
 	// document.querySelector('#menuShowMyQuotes').addEventListener("click", (event) => {
 	// 	console.log("Show my quotes");
@@ -231,7 +257,7 @@ updateList() {
 			/* console.log(`you clicked on ${mq.id}`); */	
 			/* rhit.storage.setMovieQuoteId(mq.id); */
 
-			window.location.href = `/`;
+			window.location.href = `/project.html?id=${proj.name}`;
 		};
 		newList.appendChild(newCard);
 	}
