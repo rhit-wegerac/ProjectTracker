@@ -10,3 +10,15 @@ body {
 .page-container {
     margin-top: 75px;
 }
+#rosefireButton{
+    background: #800000;
+    color: white;
+    margin: 60px auto;
+    display: block;
+    font-size: 1.1em;
+    padding: 10px 30px;
+    border-radius: 5px;
+}
+#signOutButton{
+    color: white;
+}
