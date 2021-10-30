@@ -9,6 +9,13 @@
 /** namespace. */
 var rhit = rhit || {};
 
+//From location in FA
+function htmlToElement(html){
+	var template = document.createElement('template');
+	html = html.trim();
+	template.innerHTML = html;
+	return template.content.firstChild;
+}
 
 rhit.FB_COLLECTION_PROJECTS = "Projects";
 rhit.FB_KEY_NAME = "name";
@@ -16,6 +23,7 @@ rhit.FB_KEY_MATERIALS = "materials";
 rhit.FB_KEY_TASKS = "tasks";
 rhit.FB_KEY_STATUS = "status";
 rhit.FB_KEY_USER = "user";
+rhit.FB_KEY_LAST_TOUCHED = "lastTouched";
 
 rhit.Project = class{
 	constructor(id, name, user, status, materials, tasks){
@@ -87,7 +95,7 @@ rhit.FbAuthManager = class {
 }
 rhit.checkForRedirects = function(){
 	if(document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn){
-		window.location.href = `/projectList.html?uid=${rhit.fbAuthManager.uid}`;
+		window.location.href = `/projectList.html?`;
 	}
 	if(!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn){
 		window.location.href = "/";
@@ -101,22 +109,9 @@ rhit.initializePage = function(){
 		const uid = urlParams.get("uid");
 		console.log("url param:  ", uid);
 		rhit.fbProjectManager = new rhit.FbProjectManager(uid);
-		new rhit.ListPageController();
+		new rhit.ProjectsPageController();
 	}
-	// if (document.querySelector("#detailPage")) {
-	// 	console.log("You are on the detail page.");
-
-	// 	/* const movieQuoteId = rhit.storage.getMovieQuoteId(); */
-
-	// 	const movieQuoteId = urlParams.get("id");
-		
-	// 	if (!movieQuoteId) {
-	// 		console.log("Error: Missing movie quote id.");
-	// 		window.location.href = "/";
-	// 	}
-	// 	rhit.fbSingleQuoteManager = new rhit.FbSingleQuoteManager(movieQuoteId);
-	// 	new rhit.DetailPageController();
-	// }
+	
 	if (document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
 		new rhit.LoginPageController();
@@ -124,6 +119,7 @@ rhit.initializePage = function(){
 };
 rhit.FbProjectManager = class {
 	constructor(uid) {
+		console.log("Project Manager Created");
 		this._uid = uid;
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_PROJECTS);
@@ -134,6 +130,7 @@ rhit.FbProjectManager = class {
 		this._ref.add({
 			[rhit.FB_KEY_NAME]: name,
 			[rhit.FB_KEY_USER]: rhit.fbAuthManager.uid,
+			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
 			
 
 		})
@@ -147,11 +144,11 @@ rhit.FbProjectManager = class {
 	beginListening(changeListener) {
 		let query = this._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED,"desc").limit(50);
 		if(this._uid){
-			query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
+			query = query.where(rhit.FB_KEY_USER, "==", this._uid);
 		}
 
 		this._unsubscribe = query.onSnapshot((querySnapshot) => {
-			console.log("Movie quotes update:");
+			console.log("Project update:");
 			this._documentSnapshots = querySnapshot.docs;
 			/* querySnapshot.forEach((doc) => {
 				console.log(doc.data);
@@ -168,19 +165,23 @@ rhit.FbProjectManager = class {
 	get length() {  
 		return this._documentSnapshots.length;
 	  }
-	getMovieQuoteAtIndex(index) {  
+	getProjectAtIndex(index) {  
 		const docSnapshot = this._documentSnapshots[index];
-		const mq = new rhit.MovieQuote(
+		console.log(this._documentSnapshots.length);
+		const proj = new rhit.Project(
 			docSnapshot.id, 
-			docSnapshot.get(rhit.FB_KEY_QUOTE),
-			docSnapshot.get(rhit.FB_KEY_MOVIE)
+			docSnapshot.get(rhit.FB_KEY_NAME),
+			docSnapshot.get(rhit.FB_KEY_USER),
+			docSnapshot.get(rhit.FB_KEY_STATUS),
+			docSnapshot.get(rhit.FB_KEY_MATERIALS), 
+			docSnapshot.get(rhit.FB_KEY_TASKS),
 		);
 		
-		return mq;
+		return proj;
 	  }
    }
 
-rhit.ListPageController = class {
+rhit.ProjectsPageController = class {
 constructor() {
 	// document.querySelector('#signOutButton').addEventListener("click", (event) => {
 	// 	const quote = document.querySelector("#inputQuote").value;
@@ -210,7 +211,7 @@ constructor() {
 	// 	document.querySelector("#inputQuote").focus();
 	// });
 
-	// rhit.fbMovieQuotesManager.beginListening(this.updateList.bind(this));
+	rhit.fbProjectManager.beginListening(this.updateList.bind(this));
 
 }
 
@@ -225,28 +226,29 @@ _createCard(movieQuote){
 
 updateList() {
 	console.log("I need to update thie list on the page!");
-	console.log(`Num quotes = ${rhit.fbMovieQuotesManager.length}`);
-	console.log("Example quote = ", rhit.fbMovieQuotesManager.getMovieQuoteAtIndex(0));
+	console.log(`Num projects = ${rhit.fbProjectManager.length}`);
+	console.log(`User: ${rhit.fbAuthManager.uid}`);
+	console.log("Example project = ", rhit.fbProjectManager.getProjectAtIndex(1));
 	//make new list container
-	const newList = htmlToElement('<div id="quoteListContainer"></div>');
+	const newList = htmlToElement('<div id="projectListContainer"></div>');
 	//fill the list container with quote cards using a loop
-	for (let i = 0; i < rhit.fbMovieQuotesManager.length; i++){
-		const mq = rhit.fbMovieQuotesManager.getMovieQuoteAtIndex(i);
-		const newCard = this._createCard(mq);
-		newCard.onclick = (event) => {
-			/* console.log(`you clicked on ${mq.id}`); */	
-			/* rhit.storage.setMovieQuoteId(mq.id); */
+	// for (let i = 0; i < rhit.fbMovieQuotesManager.length; i++){
+	// 	const mq = rhit.fbMovieQuotesManager.getProjectAtIndex(i);
+	// 	const newCard = this._createCard(mq);
+	// 	newCard.onclick = (event) => {
+	// 		/* console.log(`you clicked on ${mq.id}`); */	
+	// 		/* rhit.storage.setMovieQuoteId(mq.id); */
 
-			window.location.href = `/moviequote.html?id=${mq.id}`;
-		};
-		newList.appendChild(newCard);
-	}
-	//remove the old list container
-	const oldList = document.querySelector("#quoteListContainer");
-	oldList.removeAttribute("id");
-	oldList.hidden = true;
-	//put in the new list container
-	oldList.parentElement.appendChild(newList);
+	// 		window.location.href = `/moviequote.html?id=${mq.id}`;
+	// 	};
+	// 	newList.appendChild(newCard);
+	// }
+	////remove the old list container
+	// const oldList = document.querySelector("#quoteListContainer");
+	// oldList.removeAttribute("id");
+	// oldList.hidden = true;
+	// //put in the new list container
+	// oldList.parentElement.appendChild(newList);
 }
 }
 /* Main */
@@ -260,6 +262,7 @@ rhit.main = function () {
 		rhit.checkForRedirects();
 		rhit.initializePage();
 	})
+	
 	
 };
 
