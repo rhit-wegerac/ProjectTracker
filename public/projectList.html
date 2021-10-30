@@ -16,10 +16,35 @@
     <button id="signOutButton" type="button" class="btn">Sign Out</button>
 
   </nav>
-  <div id="projectsPage" class="container page-container">
+  <div id="projectsList" class="container page-container">
    <h1>PROJECTS</h1>
-
-
+   <div id="projectListContainer">
+   </div>
+   <button id="addProjectButton" type="button" class="btn">Add New Project</button>
+  </div>
+  <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
+        </div>
+        <div class="modal-body">
+          
+          <div class="form-group bmd-form-group">
+            <label for="inputName" class="bmd-label-floating">Project Name:</label>
+            <input type="text" class="form-control" id="inputName">
+          </div>
+        
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            CANCEL
+          </button>
+          <button id="submitAddProject" type="button" class="btn btn-primary">ADD</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
