@@ -18,8 +18,9 @@ function htmlToElement(html){
 }
 
 rhit.FB_COLLECTION_PROJECTS = "Projects";
-rhit.FB_KEY_NAME = "name";
-rhit.FB_KEY_MATERIALS = "materials";
+rhit.FB_KEY_NAME = "projectName";
+rhit.FB_KEY_MATERIAL_NAME= "materialName";
+rhit.FB_KEY_MATERIAL_URL = "materialURL";
 rhit.FB_KEY_TASKS = "tasks";
 rhit.FB_KEY_STATUS = "status";
 rhit.FB_KEY_USER = "user";
@@ -109,12 +110,128 @@ rhit.initializePage = function(){
 		rhit.fbProjectManager = new rhit.FbProjectManager(uid);
 		new rhit.ProjectsPageController();
 	}
+	if (document.querySelector("#projectDetails")) {
+		console.log("You are on the detail page.");
+
+
+		const projectId = urlParams.get("id");
+		
+		if (!projectId) {
+			console.log("Error: Missing project id.");
+			window.location.href = "/";
+		}
+		rhit.fbSingleProjectManager = new rhit.FbSingleProjectManager(projectId);
+		new rhit.DetailPageController();
+	}
 	
 	if (document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
 		new rhit.LoginPageController();
 	}
 };
+rhit.FbSingleProjectManager = class {
+	constructor(projectId) {
+	  this._documentSnapshot = {};
+	  this._unsubscribe = null;
+	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_PROJECTS).doc(projectId);
+      console.log(`Listening to ${this._ref.path}`);
+	}
+	beginListening(changeListener) {
+		console.log("REF: ",this._ref);
+		this._unsubscribe = this._ref.onSnapshot((doc) => {
+			if(doc.exists){
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			}else{
+				console.log("No such document.");
+			}
+		});
+
+	}
+
+	stopListening() {
+		this._unsubscribe();
+	  }
+	//   update(quote, movie) {
+	// 	  console.log(`update quote ${quote}`);
+	// 	  console.log(`update movie ${movie}`);
+	// 	  this._ref.update({
+	// 		  [rhit.FB_KEY_QUOTE]: quote,
+	// 		  [rhit.FB_KEY_MOVIE]: movie,
+	// 		  [rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
+  
+	// 	  })
+	// 	  .then(function(){
+	// 		  console.log("Document successfully updated.");
+	// 	  })
+	// 	  .catch(function(error){
+	// 		  console.log("Error adding document: ", error);
+	// 	  })
+	//   }
+	  delete() {
+		  return this._ref.delete();
+	  }
+  
+	//   get quote(){
+	// 	  return this._documentSnapshot.get(rhit.FB_KEY_QUOTE);
+	//   }
+	  get name(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_NAME);
+	  }
+	  get author(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
+	  }
+	  get status(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_STATUS);
+	  }
+  
+	 }
+
+rhit.DetailPageController = class{
+	constructor(){
+		document.querySelector('#signOutButton').addEventListener("click", (event) => {
+			rhit.fbAuthManager.signOut();
+		});
+		// document.querySelector('#submitEditQuote').addEventListener("click", (event) => {
+		// 	const quote = document.querySelector("#inputQuote").value;
+		// 	const movie = document.querySelector("#inputMovie").value;
+		// 	rhit.fbSingleQuoteManager.update(quote,movie);
+		// 	$("#editQuoteDialog").modal("hide");
+		// });
+		// document.querySelector('#submitDeleteQuote').addEventListener("click", (event) => {
+		// 	rhit.fbSingleQuoteManager.delete().then(function(){
+		// 		console.log("document successfully deleted.");
+		// 		window.location.href = "/list.html";
+		// 	}).catch(function(error){
+		// 		console.log("Error removing document: ", error);
+		// 	});
+		// 	$("#deleteQuoteDialog").modal("hide");
+			
+		// });
+
+		// $("#editQuoteDialog").on("show.bs.modal",(event) => {
+		// 	//pre-animation
+		// 	document.querySelector("#inputQuote").value = rhit.fbSingleQuoteManager.quote;
+		// 	document.querySelector("#inputMovie").value = rhit.fbSingleQuoteManager.movie;
+		// });
+		// $("#editQuoteDialog").on("shown.bs.modal",(event) =>{
+		// 	//post-animation
+		// 	console.log("It's there");
+		// 	document.querySelector("#inputQuote").focus();
+		// });
+		rhit.fbSingleProjectManager.beginListening(this.updateView.bind(this));
+	}
+	updateView(){
+		document.querySelector("#projectTitle").innerHTML = rhit.fbSingleProjectManager.name;
+		document.querySelector("#projectStatus").innerHTML = rhit.fbSingleProjectManager.status;
+
+		// if(rhit.fbSingleQuoteManager.author == rhit.fbAuthManager.uid){
+		// 	document.querySelector("#menuEdit").style.display = "flex";
+		// 	document.querySelector("#menuDelete").style.display = "flex";
+		// }
+	}
+}
 rhit.FbProjectManager = class {
 	constructor(uid) {
 		console.log("Project Manager Created");
@@ -128,9 +245,9 @@ rhit.FbProjectManager = class {
 		this._ref.add({
 			[rhit.FB_KEY_NAME]: name,
 			[rhit.FB_KEY_USER]: rhit.fbAuthManager.uid,
+			[rhit.FB_KEY_STATUS] : "Add Status",
 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
-			
-
+		
 		})
 		.then(function(docRef){
 			console.log("document written with ID:", docRef.id);
@@ -141,9 +258,11 @@ rhit.FbProjectManager = class {
 	  }
 	beginListening(changeListener) {
 		let query = this._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED,"desc").limit(50);
-		if(this._uid){
-			query = query.where(rhit.FB_KEY_USER, "==", this._uid);
-		}
+		//if(this._uid){
+			console.log(`${rhit.FB_KEY_USER}  :  ${rhit.fbAuthManager.uid}`);
+			console.log("HERERERERERE");
+			query = query.where(rhit.FB_KEY_USER, "==", rhit.fbAuthManager.uid);
+		//}
 
 		this._unsubscribe = query.onSnapshot((querySnapshot) => {
 			console.log("Project update:");
@@ -190,11 +309,11 @@ constructor() {
 	document.querySelector('#submitAddProject').addEventListener("click", (event) => {
 		const name = document.querySelector("#inputName").value;
 		rhit.fbProjectManager.addProject(name);
-		const ref = firebase.storage().ref();
-		const file = document.querySelector("#selectPhoto").files[0];
-		const filename = fbAuthManager.uid + name + file.name;
-		const metadata = {contentType: file.type};
-		ref.child(filename).put(file,metadata);
+		// const ref = firebase.storage().ref();
+		// const file = document.querySelector("#selectPhoto").files[0];
+		// const filename = fbAuthManager.uid + name + file.name;
+		// const metadata = {contentType: file.type};
+		// ref.child(filename).put(file,metadata);
 		// upload.then(snapshot=>snapshot.ref.getDownloadURL());
 		$("#addProjectModal").modal("hide");
 		
@@ -246,7 +365,7 @@ updateList() {
 	console.log("I need to update thie list on the page!");
 	console.log(`Num projects = ${rhit.fbProjectManager.length}`);
 	console.log(`User: ${rhit.fbAuthManager.uid}`);
-	console.log("Example project = ", rhit.fbProjectManager.getProjectAtIndex(0));
+	//console.log("Example project = ", rhit.fbProjectManager.getProjectAtIndex(0));
 	//make new list container
 	const newList = htmlToElement('<div id="projectListContainer"></div>');
 	//fill the list container with quote cards using a loop
@@ -257,7 +376,7 @@ updateList() {
 			/* console.log(`you clicked on ${mq.id}`); */	
 			/* rhit.storage.setMovieQuoteId(mq.id); */
 
-			window.location.href = `/project.html?id=${proj.name}`;
+			window.location.href = `/project.html?id=${proj.id}`;
 		};
 		newList.appendChild(newCard);
 	}
@@ -269,10 +388,29 @@ updateList() {
 	oldList.parentElement.appendChild(newList);
 }
 }
+rhit.startFirebaseUI = function(){
+	// FirebaseUI config.
+	var uiConfig = {
+		signInSuccessUrl: '/',
+		signInOptions: [
+			// Leave the lines as is for the providers you want to offer your users.
+			firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+			firebase.auth.EmailAuthProvider.PROVIDER_ID,
+			firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+			firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+		],
+		};
+
+		// Initialize the FirebaseUI Widget using Firebase.
+		const ui = new firebaseui.auth.AuthUI(firebase.auth());
+		// The start method will wait until the DOM is loaded.
+		ui.start('#firebaseui-auth-container', uiConfig);
+};
 /* Main */
 /** function and class syntax examples */
 rhit.main = function () {
 	console.log("Ready");
+	rhit.startFirebaseUI();
 	rhit.fbAuthManager = new rhit.FbAuthManager();
 	rhit.fbAuthManager.beginListening(() => {
 		console.log("Auth Change Callback Fired");

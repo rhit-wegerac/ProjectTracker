@@ -3,7 +3,7 @@ body {
 }
 
 .navbar {
-    background-color: #800000;
+    background-color: #1a2e87;
     color: white;
 }
 
@@ -21,4 +21,14 @@ body {
 }
 #signOutButton{
     color: white;
+}
+.listFlex{
+    display:flex;
+    justify-content: space-around;
+}
+#projectTitle{
+    text-align: center;
+}
+#projectStatus{
+    text-align: center;
 }

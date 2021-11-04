@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/5.0.0/firebase-ui-auth.css" />
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
   <title>Projects</title>
@@ -12,14 +13,31 @@
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <a class="navbar-brand" href="#">Projects</a>
+    <a class="navbar-brand" href="/projectList.html">Projects</a>
     <button id="signOutButton" type="button" class="btn" >Sign Out</button>
 
   </nav>
   <div id="projectDetails" class="container page-container">
-   <h1>PROJECTS</h1>
+   <h1 id="projectTitle">Loading...</h1>
+   <h2 id="projectStatus">loading...</h2>
+   <div class="listFlex">
+
+    <div>
+     <h2>Tasks</h2>
+     <div id="taskList">
+
+     </div>
+    </div>
+
+    <div>
+      <h2>Materials</h2>
+      <div id="materialList">
+        
+      </div>
+    </div>
+
+   </div>
    
-   <button id="addProjectButton" type="button" class="btn" data-toggle="modal" data-target="#addProjectModal">PROJECT</button>
   </div>
   <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -56,6 +74,7 @@
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/ui/5.0.0/firebase-ui-auth.js"></script>
   <script src="scripts/rosefire.min.js"></script>
   <script src="scripts/main.js"></script>
 </body>
