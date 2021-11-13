@@ -19,57 +19,107 @@
   </nav>
   <div id="projectDetails" class="container page-container">
    <h1 id="projectTitle">Loading...</h1>
-   <h2 id="projectStatus">loading...</h2>
+   <h2 id="projectStatus"data-toggle="modal" data-target="#updateStatusModal">loading...</h2>
    <div class="listFlex">
 
-    <div>
-      <div class="myprojlist">
+    <div id="task">
+      <div id="taskhead"class="myprojlist">
         <h2 class="">Tasks </h2>
-        <i class="fas fa-plus centerlist"></i>
+        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addTaskModal"><i class="fas fa-plus centerlist"></i></button>
       </div>
+      <hr>
       <div id="taskList">
 
       </div>
     </div>
 
-    <div>
-      <div class="myprojlist">
+    <div id="material">
+      <div id="materialhead"class="myprojlist">
         <h2 class="">Materials </h2>
-        <i class="fas fa-plus centerlist"></i>
+        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addMaterialModal"><i class="fas fa-plus centerlist"></i></button>
       </div>
-      <div id="taskList">
-
+      <hr>
+      <div id="materialList">
+        
       </div>
     </div>
 
    </div>
    
   </div>
-  <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+  <div>
+  <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
+          <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
         </div>
         <div class="modal-body">
           <div class="form-group bmd-form-group">
-            <label for="inputName" class="bmd-label-floating">Project Name:</label>
-            <input type="text" class="form-control" id="inputName">
+            <label for="inputName" class="bmd-label-floating">Task Name:</label>
+            <input type="text" class="form-control" id="inputTask">
           </div>
-        <div class="modal-body">
-          <div class="">
-            <input type="file" class="form-control" id="selectPhoto" accept="image/png, image/jpg">
-          </div>
-        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">
             CANCEL
           </button>
-          <button id="submitAddProject" type="button" class="btn btn-primary">ADD</button>
+          <button id="submitAddTask" type="button" class="btn btn-primary">ADD</button>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<div>
+  <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addMaterialModalLabel">Add New Material</h5>
+        </div>
+        <div class="modal-body">
+          <div class="form-group bmd-form-group">
+            <label for="inputName" class="bmd-label-floating">Material Name:</label>
+            <input type="text" class="form-control" id="inputMaterialName">
+          </div>
+          <div class="form-group bmd-form-group">
+            <label for="inputName" class="bmd-label-floating">Material URL:</label>
+            <input type="text" class="form-control" id="inputMaterialURL">
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            CANCEL
+          </button>
+          <button id="submitAddMaterial" type="button" class="btn btn-primary">ADD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateStatusModalLabel">Update Status</h5>
+        </div>
+        <div class="modal-body">
+          <div class="form-group bmd-form-group">
+            <label for="updateStatus" class="bmd-label-floating">Status:</label>
+            <input type="text" class="form-control" id="updateStatus">
+          </div>
+          
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            CANCEL
+          </button>
+          <button id="submitUpdateStatus" type="button" class="btn btn-primary">UPDATE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>

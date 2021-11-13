@@ -1,5 +1,5 @@
 body {
-    background: #DDDDDD;
+    background:#DDDDDD;
 }
 
 .navbar {
@@ -28,9 +28,13 @@ body {
 }
 #projectTitle{
     text-align: center;
+    padding: 30px;
 }
 #projectStatus{
     text-align: center;
+    border-radius: 25px;
+    background: #adadad;
+    padding: 20px;
 }
 .myprojlist{
     
@@ -39,8 +43,50 @@ body {
     justify-items: baseline;
     align-items: baseline;
     
+    
+    
 }
 .centerlist{
     margin-top:0.75rem;
     padding: 20px;
+}
+/* #taskhead{
+    text-align: center;
+} */
+
+#task{
+    
+    border-radius: 25px;
+    background: #adadad;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#material{
+    border-radius: 25px;
+    background: #adadad;
+    padding: 20px;
+    
+}
+
+
+.bigCheck{
+    transform: scale(2);
+}
+
+.addbutton{
+    background-color: transparent;
+    height: 20px;
+    width: 90px;
+}
+#taskList{
+    text-align: center;
+    justify-items: center;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+.card-header{
+    background-color: #DDDDDD !important;
 }

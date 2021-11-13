@@ -25,6 +25,8 @@ rhit.FB_KEY_TASKS = "tasks";
 rhit.FB_KEY_STATUS = "status";
 rhit.FB_KEY_USER = "user";
 rhit.FB_KEY_LAST_TOUCHED = "lastTouched";
+rhit.FB_KEY_NUMBER_TASKS = "numberTasks";
+rhit.FB_KEY_NUMBER_MATERIALS = "numberMaterials";
 
 rhit.Project = class{
 	constructor(id, name, user){
@@ -149,6 +151,51 @@ rhit.FbSingleProjectManager = class {
 		});
 
 	}
+	addTask(task) {  
+		
+		this._ref.update({
+			[rhit.FB_KEY_TASKS]: firebase.firestore.FieldValue.arrayUnion(task),
+			[rhit.FB_KEY_NUMBER_TASKS]: this.numberTasks + 1
+
+		
+		});
+		/* .then(function(docRef){
+			console.log("document written with ID:", docRef.id);
+		})
+		.catch(function(error){
+			console.log("Error adding document: ", error);
+		}) */
+	  }
+	  addMaterial(name,url) {  
+		
+		this._ref.update({
+			[rhit.FB_KEY_MATERIAL_NAME]: firebase.firestore.FieldValue.arrayUnion(name),
+			[rhit.FB_KEY_MATERIAL_URL]: firebase.firestore.FieldValue.arrayUnion(url),
+			[rhit.FB_KEY_NUMBER_MATERIALS]: this.numberMaterials + 1
+
+		
+		});
+		/* .then(function(docRef){
+			console.log("document written with ID:", docRef.id);
+		})
+		.catch(function(error){
+			console.log("Error adding document: ", error);
+		}) */
+	  }
+	  updateStatus(status) {  
+		
+		this._ref.update({
+			[rhit.FB_KEY_STATUS]: status,
+
+		
+		});
+		/* .then(function(docRef){
+			console.log("document written with ID:", docRef.id);
+		})
+		.catch(function(error){
+			console.log("Error adding document: ", error);
+		}) */
+	  }
 
 	stopListening() {
 		this._unsubscribe();
@@ -185,6 +232,21 @@ rhit.FbSingleProjectManager = class {
 	  get status(){
 		  return this._documentSnapshot.get(rhit.FB_KEY_STATUS);
 	  }
+	  get numberTasks(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_NUMBER_TASKS);
+	  }
+	  get numberMaterials(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_NUMBER_MATERIALS);
+	  }
+	  get tasks(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_TASKS);
+	  }
+	  get materialsName(){
+		  return this._documentSnapshot.get(rhit.FB_KEY_MATERIAL_NAME);
+	  }
+	  get materialsURL(){
+		return this._documentSnapshot.get(rhit.FB_KEY_MATERIAL_URL);
+	}
   
 	 }
 
@@ -192,6 +254,29 @@ rhit.DetailPageController = class{
 	constructor(){
 		document.querySelector('#signOutButton').addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
+		});
+		document.querySelector('#submitAddTask').addEventListener("click", (event) => {
+			const name = document.querySelector("#inputTask").value;
+			rhit.fbSingleProjectManager.addTask(name);
+			document.querySelector("#inputTask").value = "";
+			$("#addTaskModal").modal("hide");
+			
+		});
+		document.querySelector('#submitAddMaterial').addEventListener("click", (event) => {
+			const name = document.querySelector("#inputMaterialName").value;
+			const url = document.querySelector("#inputMaterialURL").value;
+			rhit.fbSingleProjectManager.addMaterial(name,url);
+			document.querySelector("#inputMaterialName").value = "";
+			document.querySelector("#inputMaterialURL").value = "";
+			$("#addMaterialModal").modal("hide");
+			
+		});
+		document.querySelector('#submitUpdateStatus').addEventListener("click", (event) => {
+			const status = document.querySelector("#updateStatus").value;
+			rhit.fbSingleProjectManager.updateStatus(status);
+			document.querySelector("#updateStatus").value = "";
+			$("#updateStatusModal").modal("hide");
+			
 		});
 		// document.querySelector('#submitEditQuote').addEventListener("click", (event) => {
 		// 	const quote = document.querySelector("#inputQuote").value;
@@ -222,22 +307,105 @@ rhit.DetailPageController = class{
 		// });
 		rhit.fbSingleProjectManager.beginListening(this.updateView.bind(this));
 	}
-	_createTaskCard(proj){
-		return htmlToElement(`<div class="card">
-		<div class="card-body">
-			<h5 class="card-title">Project: ${proj.name}</h5>
-			<h6 class="card-subtitle mb-2 text-muted">By: ${proj.user}</h6>
+	_createTaskCard(task){
+		/* return htmlToElement(`<div class="myprojlist card">
+		
+		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
+		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
 		</div>
-		</div>`);
+		<hr>`); */
+		return htmlToElement(`<li class="list-group-item">${task}</li>`)
+	}
+	_createTaskCardFeat(task){
+		/* return htmlToElement(`<div class="myprojlist card">
+		
+		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
+		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
+		</div>
+		<hr>`); */
+		return htmlToElement(`<li class="list-group-item card-header">${task}</li>`)
+	}
+	_createMaterialCard(name){
+		/* return htmlToElement(`<div class="myprojlist card">
+		
+		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
+		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
+		</div>
+		<hr>`); */
+		return htmlToElement(`<li class="list-group-item">${name}</li>`)
+	}
+	_createMaterialCardFeat(name){
+		/* return htmlToElement(`<div class="myprojlist card">
+		
+		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
+		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
+		</div>
+		<hr>`); */
+		return htmlToElement(`<li class="list-group-item card-header">${name}</li>`)
 	}
 	updateView(){
 		document.querySelector("#projectTitle").innerHTML = rhit.fbSingleProjectManager.name;
 		document.querySelector("#projectStatus").innerHTML = rhit.fbSingleProjectManager.status;
+		const materialNameArray = rhit.fbSingleProjectManager.materialsName;
+		const materialURLArray = rhit.fbSingleProjectManager.materialsURL;
+		const taskArray = rhit.fbSingleProjectManager.tasks;
+		
+		
+		const newList = htmlToElement(`<div id="taskList" class="card" style="">
+		<ul class="list-group list-group-flush"></ul></div>`)
+		//fill the list container with quote cards using a loop
+		
+		for (let i = 0; i < rhit.fbSingleProjectManager.numberTasks; i++){
+			console.log("make card");
+			const newtask = taskArray[i];
+			console.log(newtask);
+			let newCard = htmlToElement(`<p></p>`);
+			if (i % 2 == 0){
+				newCard = this._createTaskCard(newtask);
+			}else{
+				newCard = this._createTaskCardFeat(newtask);
+			}
+			
+			newList.appendChild(newCard);
+		}
+		////remove the old list container
+		const oldList = document.querySelector("#taskList");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		//put in the new list container
+		oldList.parentElement.appendChild(newList);
 
-		// if(rhit.fbSingleQuoteManager.author == rhit.fbAuthManager.uid){
-		// 	document.querySelector("#menuEdit").style.display = "flex";
-		// 	document.querySelector("#menuDelete").style.display = "flex";
-		// }
+
+		const newnewList = htmlToElement(`<div id="materialList" class="card" style="">
+		<ul class="list-group list-group-flush"></ul></div>`)
+		//fill the list container with quote cards using a loop
+		
+		for (let i = 0; i < rhit.fbSingleProjectManager.numberMaterials; i++){
+			console.log("make card");
+			const newName = materialNameArray[i];
+			console.log(newName);
+			let newCard = htmlToElement(`<p></p>`);
+			if (i % 2 == 0){
+				newCard = this._createMaterialCard(newName);
+			}else{
+				newCard = this._createMaterialCardFeat(newName);
+			}
+			
+//			newCard.onclick = (event) => {
+//				/* console.log(`you clicked on ${mq.id}`); */	
+//				/* rhit.storage.setMovieQuoteId(mq.id); */
+
+			//	window.location.href = `/project.html?id=${proj.id}`;
+			//};
+			newnewList.appendChild(newCard);
+		}
+		////remove the old list container
+		const oldoldList = document.querySelector("#materialList");
+		oldoldList.removeAttribute("id");
+		oldoldList.hidden = true;
+		//put in the new list container
+		oldoldList.parentElement.appendChild(newnewList);
+
 	}
 }
 rhit.FbProjectManager = class {
@@ -255,6 +423,12 @@ rhit.FbProjectManager = class {
 			[rhit.FB_KEY_USER]: rhit.fbAuthManager.uid,
 			[rhit.FB_KEY_STATUS] : "Add Status",
 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
+			[rhit.FB_KEY_MATERIAL_NAME]: ["test 1","test 2"],
+			[rhit.FB_KEY_MATERIAL_URL]: [],
+			[rhit.FB_KEY_NUMBER_MATERIALS]: 2,
+			[rhit.FB_KEY_TASKS]:["tasky boy 1"],
+			[rhit.FB_KEY_NUMBER_TASKS]: 0,
+
 		
 		})
 		.then(function(docRef){
