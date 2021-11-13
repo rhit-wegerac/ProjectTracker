@@ -32,3 +32,15 @@ body {
 #projectStatus{
     text-align: center;
 }
+.myprojlist{
+    
+    display:flex; 
+    justify-content: end;
+    justify-items: baseline;
+    align-items: baseline;
+    
+}
+.centerlist{
+    margin-top:0.75rem;
+    padding: 20px;
+}

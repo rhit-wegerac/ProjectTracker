@@ -222,6 +222,14 @@ rhit.DetailPageController = class{
 		// });
 		rhit.fbSingleProjectManager.beginListening(this.updateView.bind(this));
 	}
+	_createTaskCard(proj){
+		return htmlToElement(`<div class="card">
+		<div class="card-body">
+			<h5 class="card-title">Project: ${proj.name}</h5>
+			<h6 class="card-subtitle mb-2 text-muted">By: ${proj.user}</h6>
+		</div>
+		</div>`);
+	}
 	updateView(){
 		document.querySelector("#projectTitle").innerHTML = rhit.fbSingleProjectManager.name;
 		document.querySelector("#projectStatus").innerHTML = rhit.fbSingleProjectManager.status;
