@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/5.0.0/firebase-ui-auth.css" />
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
@@ -17,15 +18,17 @@
     <button id="signOutButton" type="button" class="btn" >Sign Out</button>
 
   </nav>
-  <div id="projectDetails" class="container page-container">
+  <div id="projectDetails" class="container animate page-container">
    <h1 id="projectTitle">Loading...</h1>
+   <img id="projectPhoto" class="center" data-toggle="modal" data-target="#addPhotoModal" src="/images/rose_logo.png">
+   
    <h2 id="projectStatus"data-toggle="modal" data-target="#updateStatusModal">loading...</h2>
    <div class="listFlex">
 
     <div id="task">
       <div id="taskhead"class="myprojlist">
-        <h2 class="">Tasks </h2>
-        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addTaskModal"><i class="fas fa-plus centerlist"></i></button>
+        <h2 id="taskfun" class="">Tasks </h2>
+        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addTaskModal"><i class="material-icons">add</i></button>
       </div>
       <hr>
       <div id="taskList">
@@ -35,8 +38,8 @@
 
     <div id="material">
       <div id="materialhead"class="myprojlist">
-        <h2 class="">Materials </h2>
-        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addMaterialModal"><i class="fas fa-plus centerlist"></i></button>
+        <h2 id="matfun" class="">Materials </h2>
+        <button  type="button" class="btn addbutton" data-toggle="modal" data-target="#addMaterialModal"><i class="material-icons">add</i></button>
       </div>
       <hr>
       <div id="materialList">
@@ -82,10 +85,7 @@
             <label for="inputName" class="bmd-label-floating">Material Name:</label>
             <input type="text" class="form-control" id="inputMaterialName">
           </div>
-          <div class="form-group bmd-form-group">
-            <label for="inputName" class="bmd-label-floating">Material URL:</label>
-            <input type="text" class="form-control" id="inputMaterialURL">
-          </div>
+          
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">
             CANCEL
@@ -120,6 +120,31 @@
     </div>
   </div>
 </div>
+
+<div>
+  <div class="modal fade" id="addPhotoModal" tabindex="-1" aria-labelledby="addPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addPhotoModalLabel">Add Photo</h5>
+        </div>
+        <div class="modal-body">
+          <div class="">
+            <input type="file" class="form-control" id="inputPhotoFile" accept="image/png, image/jpg">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            CANCEL
+          </button>
+          <button id="submitAddPhoto" type="button" class="btn btn-primary">ADD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
@@ -129,6 +154,7 @@
   <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-storage.js"></script>
   <script src="/__/firebase/init.js"></script>
   <script src="https://www.gstatic.com/firebasejs/ui/5.0.0/firebase-ui-auth.js"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

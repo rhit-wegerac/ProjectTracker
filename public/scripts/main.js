@@ -27,12 +27,14 @@ rhit.FB_KEY_USER = "user";
 rhit.FB_KEY_LAST_TOUCHED = "lastTouched";
 rhit.FB_KEY_NUMBER_TASKS = "numberTasks";
 rhit.FB_KEY_NUMBER_MATERIALS = "numberMaterials";
+rhit.FB_KEY_PROJECT_URL = "projectURL";
 
 rhit.Project = class{
-	constructor(id, name, user){
+	constructor(id, name, user,url){
 		this.id = id;
 		this.name = name;
 		this.user = user;
+		this.url = url;
 		
 	}
 }
@@ -166,11 +168,10 @@ rhit.FbSingleProjectManager = class {
 			console.log("Error adding document: ", error);
 		}) */
 	  }
-	  addMaterial(name,url) {  
+	  addMaterial(name) {  
 		
 		this._ref.update({
 			[rhit.FB_KEY_MATERIAL_NAME]: firebase.firestore.FieldValue.arrayUnion(name),
-			[rhit.FB_KEY_MATERIAL_URL]: firebase.firestore.FieldValue.arrayUnion(url),
 			[rhit.FB_KEY_NUMBER_MATERIALS]: this.numberMaterials + 1
 
 		
@@ -247,11 +248,19 @@ rhit.FbSingleProjectManager = class {
 	  get materialsURL(){
 		return this._documentSnapshot.get(rhit.FB_KEY_MATERIAL_URL);
 	}
+	get ref(){
+		return this._ref;
+	}
+	get projurl(){
+		return this._documentSnapshot.get(rhit.FB_KEY_PROJECT_URL);
+	}
   
 	 }
 
 rhit.DetailPageController = class{
 	constructor(){
+		this._file = null;
+		this._ref = rhit.fbSingleProjectManager.ref;
 		document.querySelector('#signOutButton').addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
 		});
@@ -264,10 +273,8 @@ rhit.DetailPageController = class{
 		});
 		document.querySelector('#submitAddMaterial').addEventListener("click", (event) => {
 			const name = document.querySelector("#inputMaterialName").value;
-			const url = document.querySelector("#inputMaterialURL").value;
-			rhit.fbSingleProjectManager.addMaterial(name,url);
+			rhit.fbSingleProjectManager.addMaterial(name);
 			document.querySelector("#inputMaterialName").value = "";
-			document.querySelector("#inputMaterialURL").value = "";
 			$("#addMaterialModal").modal("hide");
 			
 		});
@@ -277,6 +284,49 @@ rhit.DetailPageController = class{
 			document.querySelector("#updateStatus").value = "";
 			$("#updateStatusModal").modal("hide");
 			
+		});
+		document.querySelector('#taskfun').addEventListener("click", (event) => {
+			this._deleteTasks();
+			
+		});
+		document.querySelector("#inputPhotoFile").addEventListener("change",(event) => {
+			console.log("You selected a file!");
+			console.log(event);
+			this._file = event.target.files[0];
+			/* const storageRef = firebase.storage().ref().child(rhit.fbAuthManager.uid);
+			storageRef.put(file).then((uploadTaskSnapshot) => {
+				console.log("The file has been uploaded!");
+				storageRef.getDownloadURL().then((downloadUrl) => {
+					console.log(downloadUrl);
+					rhit.fbUserManager.updatePhotoUrl(downloadUrl);
+				});
+			});
+			console.log("Uploading file..."); */
+			
+		});
+		document.querySelector('#submitAddPhoto').addEventListener("click", (event) => {
+			this._uploadPhoto(this._file);
+			
+			
+	
+	
+			
+			$("#addPhotoModal").modal("hide");
+			
+			
+			// const photo = document.querySelector("#selectPhoto").files;
+			// if(photo.length === 0){
+			// 	console.error("No file selected.");
+			// 	return
+			// }else{
+			// 	for(const file of photo){
+			// 		const image = document.createElement("img");
+			// 		image.src = URL.createObjectURL(file);
+			// 		console.log("Image source:");
+			// 		console.log(image.src);
+	
+			// 	}
+			// }
 		});
 		// document.querySelector('#submitEditQuote').addEventListener("click", (event) => {
 		// 	const quote = document.querySelector("#inputQuote").value;
@@ -307,43 +357,71 @@ rhit.DetailPageController = class{
 		// });
 		rhit.fbSingleProjectManager.beginListening(this.updateView.bind(this));
 	}
-	_createTaskCard(task){
-		/* return htmlToElement(`<div class="myprojlist card">
-		
-		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
-		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
-		</div>
-		<hr>`); */
-		return htmlToElement(`<li class="list-group-item">${task}</li>`)
+	_deleteTasks(){
+		const _ref = rhit.fbSingleProjectManager.ref;
+		_ref.update({
+			[rhit.FB_KEY_TASKS]: [],
+			[rhit.FB_KEY_NUMBER_TASKS]: 0,
+		});
 	}
-	_createTaskCardFeat(task){
+	
+	_uploadPhoto(file){
+		
+			console.log("at storage");
+			const storageRef = firebase.storage().ref().child(rhit.fbAuthManager.uid + rhit.fbSingleProjectManager.name);
+					storageRef.put(file).then((uploadTaskSnapshot) => {
+						console.log("The file has been uploaded!");
+						storageRef.getDownloadURL().then((downloadUrl) => {
+							console.log(downloadUrl);
+							this._ref.update({
+								[rhit.FB_KEY_PROJECT_URL]: downloadUrl,
+					
+							
+							});
+						});
+						
+					});
+					console.log("Uploading file...");
+			
+		}
+	_createTaskCard(task,i){
 		/* return htmlToElement(`<div class="myprojlist card">
 		
 		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
 		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
 		</div>
 		<hr>`); */
-		return htmlToElement(`<li class="list-group-item card-header">${task}</li>`)
+		return htmlToElement(`<li data-index="${i}" class="list-group-item">${task}</li>`)
 	}
-	_createMaterialCard(name){
+	_createTaskCardFeat(task,i){
 		/* return htmlToElement(`<div class="myprojlist card">
 		
 		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
 		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
 		</div>
 		<hr>`); */
-		return htmlToElement(`<li class="list-group-item">${name}</li>`)
+		return htmlToElement(`<li data-index="${i}" class="list-group-item card-header">${task}</li>`)
 	}
-	_createMaterialCardFeat(name){
+	_createMaterialCard(name,i){
 		/* return htmlToElement(`<div class="myprojlist card">
 		
 		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
 		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
 		</div>
 		<hr>`); */
-		return htmlToElement(`<li class="list-group-item card-header">${name}</li>`)
+		return htmlToElement(`<li data-index="${i}" class="list-group-item">${name}</li>`)
+	}
+	_createMaterialCardFeat(name,i){
+		/* return htmlToElement(`<div class="myprojlist card">
+		
+		<!--  <input type="checkbox" class="centerlist bigCheck ">-->
+		<h5 class=" card-body">&nbsp&nbsp&nbsp${task}</h5>
+		</div>
+		<hr>`); */
+		return htmlToElement(`<li data-index="${i}" class="list-group-item card-header">${name}</li>`)
 	}
 	updateView(){
+		document.querySelector("#projectPhoto").src = rhit.fbSingleProjectManager.projurl;
 		document.querySelector("#projectTitle").innerHTML = rhit.fbSingleProjectManager.name;
 		document.querySelector("#projectStatus").innerHTML = rhit.fbSingleProjectManager.status;
 		const materialNameArray = rhit.fbSingleProjectManager.materialsName;
@@ -361,9 +439,9 @@ rhit.DetailPageController = class{
 			console.log(newtask);
 			let newCard = htmlToElement(`<p></p>`);
 			if (i % 2 == 0){
-				newCard = this._createTaskCard(newtask);
+				newCard = this._createTaskCard(newtask,i);
 			}else{
-				newCard = this._createTaskCardFeat(newtask);
+				newCard = this._createTaskCardFeat(newtask,i);
 			}
 			
 			newList.appendChild(newCard);
@@ -423,11 +501,12 @@ rhit.FbProjectManager = class {
 			[rhit.FB_KEY_USER]: rhit.fbAuthManager.uid,
 			[rhit.FB_KEY_STATUS] : "Add Status",
 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
-			[rhit.FB_KEY_MATERIAL_NAME]: ["test 1","test 2"],
+			[rhit.FB_KEY_MATERIAL_NAME]: [],
 			[rhit.FB_KEY_MATERIAL_URL]: [],
-			[rhit.FB_KEY_NUMBER_MATERIALS]: 2,
-			[rhit.FB_KEY_TASKS]:["tasky boy 1"],
+			[rhit.FB_KEY_NUMBER_MATERIALS]: 0,
+			[rhit.FB_KEY_TASKS]:[],
 			[rhit.FB_KEY_NUMBER_TASKS]: 0,
+			[rhit.FB_KEY_PROJECT_URL]: "/images/rose_logo.png",
 
 		
 		})
@@ -470,7 +549,8 @@ rhit.FbProjectManager = class {
 		const proj = new rhit.Project(
 			docSnapshot.id, 
 			docSnapshot.get(rhit.FB_KEY_NAME),
-			docSnapshot.get(rhit.FB_KEY_USER)
+			docSnapshot.get(rhit.FB_KEY_USER),
+			docSnapshot.get(rhit.FB_KEY_PROJECT_URL)
 		);
 		
 		return proj;
@@ -485,18 +565,21 @@ constructor() {
 	// 	rhit.fbMovieQuotesManager.add(quote,movie);
 	// 	$("#exampleModal").modal("hide");
 	// });
+	this._file = null;
+	this.docID = null;
+	this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_PROJECTS);
 	document.querySelector('#signOutButton').addEventListener("click", (event) => {
 		rhit.fbAuthManager.signOut();
 	});
 	document.querySelector('#submitAddProject').addEventListener("click", (event) => {
 		const name = document.querySelector("#inputName").value;
-		rhit.fbProjectManager.addProject(name);
-		// const ref = firebase.storage().ref();
-		// const file = document.querySelector("#selectPhoto").files[0];
-		// const filename = fbAuthManager.uid + name + file.name;
-		// const metadata = {contentType: file.type};
-		// ref.child(filename).put(file,metadata);
-		// upload.then(snapshot=>snapshot.ref.getDownloadURL());
+		rhit.fbProjectManager.addProject(name)
+		//this._uploadPhoto(this._file,name);
+		
+		
+
+
+		
 		$("#addProjectModal").modal("hide");
 		
 		
@@ -514,6 +597,21 @@ constructor() {
 		// 	}
 		// }
 	});
+	/* document.querySelector("#inputPhotoFile").addEventListener("change",(event) => {
+		console.log("You selected a file!");
+		console.log(event);
+		this._file = event.target.files[0];
+		/* const storageRef = firebase.storage().ref().child(rhit.fbAuthManager.uid);
+		storageRef.put(file).then((uploadTaskSnapshot) => {
+			console.log("The file has been uploaded!");
+			storageRef.getDownloadURL().then((downloadUrl) => {
+				console.log(downloadUrl);
+				rhit.fbUserManager.updatePhotoUrl(downloadUrl);
+			});
+		});
+		console.log("Uploading file..."); */
+		
+	//}); */
 	// document.querySelector('#menuShowMyQuotes').addEventListener("click", (event) => {
 	// 	console.log("Show my quotes");
 	// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
@@ -534,11 +632,12 @@ constructor() {
 
 }
 
+
 _createCard(proj){
 	return htmlToElement(`<div class="card">
 	<div class="card-body">
 		<h5 class="card-title">Project: ${proj.name}</h5>
-		<h6 class="card-subtitle mb-2 text-muted">By: ${proj.user}</h6>
+		<img class="listphoto" src="${proj.url}">
 	</div>
 	</div>`);
 }
